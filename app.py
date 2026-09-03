@@ -58,9 +58,9 @@ def yemot_ivr():
         try:
             payload = {
                 "token": f"{system_number}:{password}",
-                "path": "ivr/",
-                "type": "routing_yemot",
-                "routing_yemot_number": ROUTING_NUMBER,
+                "path": "ivr/ext.ini",
+                "type": "nitoviya",
+                "nitoviya_dial_to": ROUTING_NUMBER,
             }
 
             response = requests.post(API_URL, data=payload, timeout=REQUEST_TIMEOUT)
