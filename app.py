@@ -32,9 +32,13 @@ def health_check():
 @app.route('/api/yemot', methods=['GET', 'POST'])
 def yemot_ivr():
     req = request.values
+    refresh = req.get('refresh')
     choice = (req.get('choice') or '').strip()
     system_number = (req.get('system_number') or '').strip()
     password = (req.get('password') or '').strip()
+
+    if refresh is not None and str(refresh).strip() != '':
+        return "OK", 200
 
     if not choice:
         return "read=t-שלום וברוך הבא לשלוחת פתיחת מספרים אישיים, אם יש ברשותך מספר מערכת הקש 2, ואם לא הקש 1=choice,no,1,1,7,No,Yes"
@@ -89,7 +93,4 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == '__main__':
     args = parse_args()
-    app.run(host=args.host, port=args.port, debug=args.debug)    $env:Path += ";C:\Program Files\Git\cmd"
-    git --version    git remote add origin https://github.com/שם_משתמש/שם_ריפו.git
-    git branch -M main
-    git push -u origin main
+    app.run(host=args.host, port=args.port, debug=args.debug)
