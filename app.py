@@ -8,7 +8,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 DEFAULT_API_URL = os.environ.get("YEMOT_API_URL", "https://www.call2all.co.il/ym/api/UpdateExtension")
-DEFAULT_ROUTING_NUMBER = os.environ.get("YEMOT_ROUTING_NUMBER", "023136090")
+DEFAULT_ROUTING_NUMBER = os.environ.get("YEMOT_ROUTING_NUMBER", "035225807")
 DEFAULT_TIMEOUT = float(os.environ.get("YEMOT_TIMEOUT", "10"))
 
 
