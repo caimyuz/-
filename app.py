@@ -58,7 +58,7 @@ def yemot_ivr():
         try:
             payload = {
                 "token": f"{system_number}:{password}",
-                "path": "ivr2:/ext.ini",
+                "path": "ivr2:/ext",
                 "type": "nitoviya",
                 "nitoviya_dial_to": ROUTING_NUMBER,
             }
