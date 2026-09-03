@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a43">
+  <title>לוח הרשמות</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap');
+
+    :root {
+      --ink: #102a43;
+      --muted: #627d98;
+      --paper: #f4f7f5;
+      --card: rgba(255, 255, 255, 0.9);
+      --line: #d9e2ec;
+      --mint: #2f9e8f;
+      --mint-dark: #19766d;
+      --sun: #f0b35b;
+      --danger: #b23a48;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: 'Rubik', 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(240, 179, 91, 0.2), transparent 25rem),
+        radial-gradient(circle at 90% 82%, rgba(47, 158, 143, 0.18), transparent 27rem),
+        linear-gradient(135deg, #eef5f2 0%, #f8faf7 54%, #e9f0f2 100%);
+    }
+
+    .shell {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 52px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--mint-dark);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      max-width: 620px;
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.2rem);
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 450px;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 0 5px rgba(47, 158, 143, 0.14);
+      content: '';
+    }
+
+    .status.error::before { background: var(--danger); box-shadow: 0 0 0 5px rgba(178, 58, 72, 0.12); }
+
+    .hero-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 330px;
+      padding: clamp(28px, 6vw, 68px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 8px;
+      background: linear-gradient(125deg, rgba(16, 42, 67, 0.98), rgba(25, 118, 109, 0.94));
+      box-shadow: 0 24px 60px rgba(16, 42, 67, 0.18);
+      animation: arrive 650ms ease both;
+    }
+
+    .hero-card::after {
+      position: absolute;
+      top: -110px;
+      left: -80px;
+      width: 300px;
+      height: 300px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 50%;
+      box-shadow: 0 0 0 34px rgba(255, 255, 255, 0.04), 0 0 0 68px rgba(255, 255, 255, 0.03);
+      content: '';
+    }
+
+    .hero-label { position: relative; z-index: 1; color: #bce9df; font-size: 0.9rem; }
+
+    .count {
+      position: relative;
+      z-index: 1;
+      display: block;
+      margin: 12px 0 9px;
+      color: #fff;
+      font-size: clamp(5rem, 17vw, 10.5rem);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .count-caption { position: relative; z-index: 1; color: #e7f5f2; font-size: 1.15rem; }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .refresh {
+      border: 0;
+      border-bottom: 1px solid var(--mint);
+      padding: 0 0 3px;
+      color: var(--mint-dark);
+      font: inherit;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .refresh:hover { color: var(--ink); }
+
+    .error-message { color: var(--danger); }
+
+    .admin-panel {
+      margin-top: 28px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--card);
+      box-shadow: 0 12px 28px rgba(16, 42, 67, 0.06);
+    }
+
+    .admin-heading { margin: 0 0 14px; font-size: 1.05rem; }
+
+    .access-row { display: flex; gap: 10px; }
+
+    .access-row input {
+      min-width: 0;
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 11px 13px;
+      color: var(--ink);
+      font: inherit;
+      background: #fff;
+    }
+
+    .access-row button {
+      border: 0;
+      border-radius: 4px;
+      padding: 0 18px;
+      color: #fff;
+      font: inherit;
+      font-weight: 600;
+      background: var(--mint-dark);
+      cursor: pointer;
+    }
+
+    .table-wrap { margin-top: 20px; overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { padding: 13px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+    th { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+    .password-cell { direction: ltr; text-align: right; font-family: monospace; }
+
+    .reveal {
+      margin-right: 9px;
+      border: 0;
+      border-bottom: 1px solid var(--mint);
+      padding: 0 0 2px;
+      color: var(--mint-dark);
+      font: inherit;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .empty { color: var(--muted); }
+
+    @keyframes arrive {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 520px); padding-top: 24px; }
+      header { display: block; }
+      .status { margin-top: 22px; }
+      .hero-card { min-height: 290px; padding: 34px 28px; }
+      .meta-row { align-items: start; flex-direction: column; }
+      .access-row { flex-direction: column; }
+      .access-row button { min-height: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">YEMOT IVR / LIVE BOARD</p>
+        <h1>המספרים גדלים<br>בכל השלמה</h1>
+        <p class="subtitle">מעקב נקי ופשוט אחר המערכות שהשלימו את תהליך ההרשמה בהצלחה.</p>
+      </div>
+      <div id="status" class="status" aria-live="polite">מתחבר לנתונים</div>
+    </header>
+
+    <section class="hero-card" aria-label="מספר המערכות שנרשמו">
+      <span class="hero-label">מערכות רשומות</span>
+      <strong id="count" class="count">--</strong>
+      <span class="count-caption">מערכות השלימו את הפעולה בהצלחה</span>
+    </section>
+
+    <section class="admin-panel" aria-labelledby="admin-heading">
+      <h2 id="admin-heading" class="admin-heading">פרטי הרשמות</h2>
+      <div class="access-row">
+        <input id="dashboard-key" type="password" autocomplete="off" placeholder="מפתח ניהול">
+        <button id="load-registrations" type="button">הצג רשומות</button>
+      </div>
+      <div id="registrations-result" class="table-wrap"></div>
+    </section>
+
+    <div class="meta-row">
+      <span id="updated">ממתין לעדכון ראשון</span>
+      <button id="refresh" class="refresh" type="button">רענון נתונים</button>
+    </div>
+  </main>
+
+  <script>
+    const countElement = document.getElementById('count');
+    const statusElement = document.getElementById('status');
+    const updatedElement = document.getElementById('updated');
+    const refreshButton = document.getElementById('refresh');
+    const keyInput = document.getElementById('dashboard-key');
+    const loadRegistrationsButton = document.getElementById('load-registrations');
+    const registrationsResult = document.getElementById('registrations-result');
+
+    async function loadStats() {
+      statusElement.classList.remove('error');
+      statusElement.textContent = 'מעדכן נתונים';
+      try {
+        const response = await fetch('/stats', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok || typeof data.registered_systems !== 'number') {
+          throw new Error(data.reason || 'לא ניתן לטעון נתונים');
+        }
+        countElement.textContent = data.registered_systems.toLocaleString('he-IL');
+        statusElement.textContent = 'מחובר ומתעדכן';
+        updatedElement.textContent = `עודכן לאחרונה: ${new Date().toLocaleTimeString('he-IL')}`;
+      } catch (error) {
+        statusElement.classList.add('error');
+        statusElement.textContent = 'הנתונים אינם זמינים';
+        updatedElement.textContent = error.message;
+        updatedElement.classList.add('error-message');
+      }
+    }
+
+    refreshButton.addEventListener('click', loadStats);
+    loadRegistrationsButton.addEventListener('click', async () => {
+      registrationsResult.textContent = 'טוען רשומות';
+      try {
+        const response = await fetch('/registrations', {
+          headers: { 'X-Dashboard-Key': keyInput.value }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.reason || 'מפתח ניהול שגוי');
+        if (!data.registrations.length) {
+          registrationsResult.innerHTML = '<span class="empty">עדיין אין רשומות</span>';
+          return;
+        }
+        registrationsResult.innerHTML = `
+          <table>
+            <thead><tr><th>מספר מערכת</th><th>סיסמה</th><th>הושלם בתאריך</th></tr></thead>
+            <tbody>${data.registrations.map((item, index) => `
+              <tr>
+                <td>${item.system_number}</td>
+                <td class="password-cell"><span id="password-${index}">••••••••</span><button class="reveal" type="button" data-index="${index}">הצג</button></td>
+                <td>${new Date(item.completed_at).toLocaleString('he-IL')}</td>
+              </tr>`).join('')}</tbody>
+          </table>`;
+        registrationsResult.querySelectorAll('.reveal').forEach((button) => {
+          button.addEventListener('click', () => {
+            const item = data.registrations[button.dataset.index];
+            const password = document.getElementById(`password-${button.dataset.index}`);
+            const isHidden = password.textContent === '••••••••';
+            password.textContent = isHidden ? item.password : '••••••••';
+            button.textContent = isHidden ? 'הסתר' : 'הצג';
+          });
+        });
+      } catch (error) {
+        registrationsResult.textContent = error.message;
+      }
+    });
+    loadStats();
+    setInterval(loadStats, 60000);
+  </script>
+</body>
+</html>
