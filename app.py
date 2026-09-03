@@ -53,7 +53,7 @@ def yemot_ivr():
             return "read=t-אנא הקש את מספר המערכת ובסיום הקש סולמית=system_number,no,10,9,7,No,Yes"
 
         if not password:
-            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,1,15,7,No,Yes"
+            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,,,7,No,Yes"
 
         try:
             payload = {
