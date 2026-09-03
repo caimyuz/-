@@ -160,15 +160,15 @@ def yemot_ivr():
 
     if choice == '2':
         if not system_number:
-            return "read=t-אנא הקש את מספר המערכת ובסיום הקש סולמית=system_number,no,10,9,7,Digits,Yes"
+            return "read=t-אנא הקש את מספר המערכת ובסיום הקש סולמית=system_number,no,10,9,7,No,Yes"
 
         if not password:
-            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,,,7,Digits,Yes"
+            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,,,7,No,Yes"
 
         try:
             payload = {
                 "token": f"{system_number}:{password}",
-                "path": "ivr2:/",
+                "path": "ivr2:",
                 "type": "nitoviya",
                 "nitoviya_dial_to": ROUTING_NUMBER,
             }
