@@ -68,7 +68,7 @@ def yemot_ivr():
             response_data = response.json()
 
             if response_data.get("responseStatus") == "OK":
-                return "id_list_message=t-הפעולה בוצעה בהצלחה"
+                return "id_list_message=t-הפעולה בוצעה בהצלחה."
 
             return "id_list_message=t-שגיאה: מספר המערכת או הסיסמה שגויים."
 
