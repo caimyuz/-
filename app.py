@@ -160,10 +160,10 @@ def yemot_ivr():
 
     if choice == '2':
         if not system_number:
-            return "read=t-אנא הקש את מספר המערכת ובסיום הקש סולמית=system_number,no,10,9,7,No,Yes"
+            return "read=t-אנא הקש את מספר המערכת ובסיום הקש סולמית=system_number,no,10,9,7,Digits,Yes"
 
         if not password:
-            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,,,7,No,Yes"
+            return "read=t-אנא הקש את הסיסמה ובסיום הקש סולמית=password,no,,,7,Digits,Yes"
 
         try:
             payload = {
